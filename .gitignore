@@ -4,6 +4,8 @@ __pycache__/
 *$py.class
 
 # ML specifics
+lightning_logs/
+path.py
 *.rttm
 *.ckpt
 *.swp
