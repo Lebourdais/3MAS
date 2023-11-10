@@ -37,6 +37,7 @@ from src.models import (
     Seq2Seq,
     Seq2Seq_chromas,
     Seq2Seq_Leaf,
+    Seq2Seq_Griffin,
 )
 from path import PATH_TO_PYANNOTE_DB,PATH_TO_NOISE,PATH_TO_MUSIC
 from pytorch_lightning.callbacks import (
@@ -48,12 +49,6 @@ from pytorch_lightning.callbacks import (
 from pytorch_lightning.loggers import TensorBoardLogger, CSVLogger
 from src.models.blocks import AdditiveAugment, OverlapAugment
 from src.utils.preprocessors import annotation_treat
-from src.pyannote_audio_alt.multilabel import (
-    LoggableHistogram,
-    MultiLabelSegmentationAlt,
-)
-
-USE_PYANNOTE_ALT = False
 # Models
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_typ", type=str, default="tcn")
@@ -189,31 +184,15 @@ taskhooks = []
 
 # histograms
 
-if USE_PYANNOTE_ALT:
-    loggables = None
-    full_seg = MultiLabelSegmentationAlt(
-        corpus,  # defines the training and validation sets
-        classes=classes,  # classes of interest
-        duration=args.duration,  # the model will ingest 2s audio chunks
-        augmentation=augmentation,
-        batch_size=args.batch_size,
-        num_workers=args.num_workers,
-        pin_memory=True,
-        metric_classwise=metric_classwise,
-        loggables=loggables,
-        taskhooks=taskhooks,
-        augment_location=args.augment_location,
-    )
-else:
-    full_seg = MultiLabelSegmentation(
-        corpus,  # defines the training and validation sets
-        classes=classes,  # classes of interest
-        duration=args.duration,  # the model will ingest 2s audio chunks
-        augmentation=augmentation,
-        batch_size=args.batch_size,
-        num_workers=args.num_workers,
-        pin_memory=True,
-    )
+full_seg = MultiLabelSegmentation(
+    corpus,  # defines the training and validation sets
+    classes=classes,  # classes of interest
+    duration=args.duration,  # the model will ingest 2s audio chunks
+    augmentation=augmentation,
+    batch_size=args.batch_size,
+    num_workers=args.num_workers,
+    pin_memory=True,
+)
 
 
 if __name__ == "__main__":
@@ -222,6 +201,8 @@ if __name__ == "__main__":
         model = Seq2Seq(task=full_seg, tcn={"out_chan": len(classes)})
     elif args.model_typ == "tcn_chromas":
         model = Seq2Seq_chromas(task=full_seg)
+    elif args.model_typ == "tcn_griffin":
+        model = Seq2Seq_Griffin(task=full_seg,tcn={"out_chan": len(classes)})
     elif args.model_typ == "tcn_leaf":
         filters = 60
         model = Seq2Seq_Leaf(

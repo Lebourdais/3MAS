@@ -8,11 +8,11 @@ from einops import rearrange
 from pyannote.audio.core.model import Model
 from pyannote.audio.core.task import Task
 from pyannote.audio.utils.params import merge_dict
-from torchaudio.transforms import ComputeDeltas
+from torchaudio.transforms import ComputeDeltas,GriffinLim, Spectrogram
 from .blocks import TCN, WavLM_Feats
 
 
-class Seq2Seq(Model):
+class Seq2Seq_Griffin(Model):
     WAVLM_DEFAULTS = {
         "update_extract": False,
         "feat_type": "wavlm_large",
@@ -50,7 +50,8 @@ class Seq2Seq(Model):
         wavlm = merge_dict(self.WAVLM_DEFAULTS, wavlm)  # WavLM params
 
         tcn = merge_dict(self.TCN_DEFAULTS, tcn)  # TCN params
-
+        self.spectro = Spectrogram(n_fft=512)
+        self.griffin = GriffinLim(n_fft=512) 
         self.save_hyperparameters("wavlm", "tcn")
         self.wavlm = WavLM_Feats(**self.hparams.wavlm)
 
@@ -73,6 +74,8 @@ class Seq2Seq(Model):
         -------
         scores : (batch, frame, classes)
         """
+        spectro = self.spectro(waveforms)
+        waveforms = self.griffin(spectro)
         outputs = self.wavlm(
             waveforms.squeeze(dim=1)
         )  # Extraction of wavLM characteristics

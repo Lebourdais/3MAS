@@ -14,12 +14,7 @@ from pyannote.audio.utils.params import merge_dict
 
 from .blocks import (
     TCN,
-    WavLM_Feats,
     ChromaExtractor,
-    Features_Fusion,
-    Permute,
-    Unsqueeze,
-    Squeeze,
 )
 
 

@@ -13,6 +13,7 @@ from rich.progress import track
 from rich.console import Console
 from rich.table import Table
 import shutil
+from path import PATH_TO_PYANNOTE_DB, PATH_TO_DATA_HUB
 
 # parser = argparse.ArgumentParser(description="Prediction parameters")
 # parser.add_argument('folder', type=str)
@@ -21,7 +22,7 @@ import shutil
 
 def evaluate(folder,dataset,log="None",compress=False):
 
-    path = "/gpfsdswork/projects/rech/wcp/commun/datasets/pyannote_db/"
+    path = PATH_TO_DATA_HUB
     if not os.path.isdir(folder):
         raise ValueError(f"{folder} is not a directory")
 
@@ -30,11 +31,11 @@ def evaluate(folder,dataset,log="None",compress=False):
         raise ValueError(f"No rttm files in {folder}")
 
     # Corpora mapping:
-    allies_clean = [l.strip() for l in open(f"{path}/lists/ALLIES/allies_clean.lst")]
-    test_D = [l.strip() for l in open(f"{path}/lists/ALLIES/Test-D.lst")]
-    test_E = [l.strip() for l in open(f"{path}/lists/ALLIES/Test-E.lst")]
-    dihard = [l.strip() for l in open(f"{path}/lists/DIHARD/full.test.uris.lst")]
-    domains = pd.read_table(f"{path}/lists/DIHARD/recordings.tbl", comment='#', delim_whitespace=True)
+    allies_clean = [l.strip() for l in open(f"{path}/ALLIES/lst/allies_clean.lst")]
+    test_D = [l.strip() for l in open(f"{path}/ALLIES/lst/Test-D.lst")]
+    test_E = [l.strip() for l in open(f"{path}/ALLIES/lst/Test-E.lst")]
+    dihard = [l.strip() for l in open(f"{path}/DIHARD/lst/full.test.uris.lst")]
+    domains = pd.read_table(f"{path}/DIHARD/lst/recordings.tbl", comment='#', delim_whitespace=True)
     dom_dict = {}
     for ii,l in domains.iterrows():
         if l['domain'] not in dom_dict:
@@ -42,7 +43,7 @@ def evaluate(folder,dataset,log="None",compress=False):
         else:
             dom_dict[l['domain']].append(l['uri'])
 
-    aragon_radio_t = [l.strip() for l in open(f"{path}/lists/ALBAYZIN/lists/AragonRadio/test.txt")]
+    aragon_radio_t = [l.strip() for l in open(f"{path}/ALBAYZIN/lists/AragonRadio/test.txt")]
 
     def get_score(liste, metric, scores,classes=["sp"]):
         glob_res = {l:None for l in classes}
@@ -123,7 +124,7 @@ def evaluate(folder,dataset,log="None",compress=False):
 	    return speech_base
     scores = {}
 
-    registry.load_database("/gpfswork/rech/wcp/commun/datasets/pyannote_db/database.yaml")
+    registry.load_database(PATH_TO_PYANNOTE_DB)
     corpus = registry.get_protocol(dataset, preprocessors={"annotation": treat})
     length = len(list(corpus.test_iter()))
     metric = DetectionPrecisionRecallFMeasure()
@@ -193,7 +194,7 @@ def evaluate(folder,dataset,log="None",compress=False):
     noise_part.add_column("Precision")
     noise_part.add_column("Recall")
     noise_part.add_column("F1-score", justify="right", style="green")
-    
+
     global_tab = Table(title="Global results")
     global_tab.add_column("Task", justify="right", style="cyan", no_wrap=True)
     global_tab.add_column("Precision")
@@ -201,7 +202,7 @@ def evaluate(folder,dataset,log="None",compress=False):
     global_tab.add_column("F1-score", justify="right", style="green")
 
     console = Console(record=True)
-    
+
     speech_part.add_row("Allies_clean",
                         "NA" if allies_clean_scores['sp'][0] == 'NA' else f"{allies_clean_scores['sp'][0]:.3f}" ,
                         "NA" if allies_clean_scores['sp'][1] == 'NA' else f"{allies_clean_scores['sp'][1]:.3f}",
@@ -286,12 +287,12 @@ def evaluate(folder,dataset,log="None",compress=False):
                        "NA" if allies_clean_scores['mu'][1] == 'NA' else f"{allies_clean_scores['mu'][1]:.3f}",
                        "NA" if allies_clean_scores['mu'][2] == 'NA' else f"{allies_clean_scores['mu'][2]:.3f}")
     console.print(music_part)
-    
+
     noise_part.add_row(f"Aragon_radio",
                        "NA" if aragon_radio['no'][0] == 'NA' else f"{aragon_radio['no'][0]:.3f}",
                        "NA" if aragon_radio['no'][1] == 'NA' else f"{aragon_radio['no'][1]:.3f}",
                        "NA" if aragon_radio['no'][2] == 'NA' else f"{aragon_radio['no'][2]:.3f}")
-    
+
     # result line
     res = []
 
