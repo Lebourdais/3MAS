@@ -1,6 +1,6 @@
 # 3MAS
 
-This code is associated with the article "3MAS: A MULTIPURPOSE, MULTILABEL, MULTIDATASET AUDIO SEGMENTATION MODEL"
+This code is associated with the article "3MAS: A MULTITASK, MULTILABEL, MULTIDATASET AUDIO SEGMENTATION MODEL"
 
 This work has been done during the 2023 JSALT Workshop that took place in Le Mans.
 
@@ -57,3 +57,9 @@ To evaluate the model `dummy_output_model_name` on the test partition of `X.Segm
 ```sh
 python3 predict_full.py --dataset X.Segmentation.Main --name output_results dummy_output_model_name.ckpt
 ```
+
+# NMF
+This code is also associated with the paper "Explainable by-design Audio Segmentation through Non-Negative Matrix
+Factorization and Probing", by Martin Lebourdais, Théo Mariotte, Antonio Almudévar, Marie Tahon, Alfonso Ortega
+
+The probes and visualisation notebooks used for the article are available in the NMF_visualisation folder
